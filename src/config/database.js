@@ -16,12 +16,13 @@ async function connectDB() {
   }
 
   try {
+    // Disable mongoose buffering globally (required for serverless)
+    mongoose.set('bufferCommands', false);
+    
     // Set connection options for serverless environments
     const options = {
       serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
       socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-      bufferMaxEntries: 0, // Disable mongoose buffering
-      bufferCommands: false, // Disable mongoose buffering
     };
 
     const conn = await mongoose.connect(process.env.MONGODB_URI, options);
