@@ -17,15 +17,7 @@
   "crons": [
     {
       "path": "/api/cron/scrape",
-      "schedule": "30 9 * * *"
-    },
-    {
-      "path": "/api/cron/scrape",
       "schedule": "30 14 * * *"
-    },
-    {
-      "path": "/api/cron/scrape",
-      "schedule": "0 21 * * *"
     }
   ],
   "functions": {
