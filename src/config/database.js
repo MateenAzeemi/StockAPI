@@ -1,41 +1,20 @@
-const mongoose = require('mongoose');
-const config = require('./env');
+const mongoose = require("mongoose");
 
-/**
- * Database Connection
- * Connects to MongoDB using Mongoose
- */
-const connectDB = async () => {
+let isConnected = false;
+
+async function connectDB() {
+  if (isConnected) return;
+
   try {
-    const conn = await mongoose.connect(config.MONGODB_URI, {
-      // These options are no longer needed in Mongoose 6+, but kept for compatibility
-    });
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
 
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📊 Database: ${conn.connection.name}`);
-    
-    return conn;
+    isConnected = conn.connections[0].readyState === 1;
+
+    console.log("✅ MongoDB Connected (Vercel Cached)");
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
-    process.exit(1);
+    console.error("❌ MongoDB connection error:", error);
+    throw error;
   }
-};
-
-// Handle connection events
-mongoose.connection.on('disconnected', () => {
-  console.log('⚠️  MongoDB disconnected');
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('❌ MongoDB error:', err);
-});
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  await mongoose.connection.close();
-  console.log('MongoDB connection closed through app termination');
-  process.exit(0);
-});
+}
 
 module.exports = connectDB;
-
