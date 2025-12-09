@@ -6,10 +6,13 @@ const adminAuth = require('../middleware/adminAuth');
 /**
  * Admin Routes
  * Admin authentication and market window stock management endpoints
- * All routes require admin authentication
+ * All routes require admin authentication except login and signup
  */
 
-// POST /api/admin/login - Admin login
+// POST /api/admin/signup - Admin signup (public)
+router.post('/signup', adminController.signup);
+
+// POST /api/admin/login - Admin login (public)
 router.post('/login', adminController.login);
 
 // GET /api/admin/me - Get current admin (protected)

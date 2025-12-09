@@ -211,6 +211,50 @@ class AdminService {
       throw new Error('Failed to delete user');
     }
   }
+
+  /**
+   * Create admin user
+   * @param {Object} adminData - Admin data (name, email, password)
+   * @returns {Object} Admin user and token
+   */
+  async createAdmin(adminData) {
+    try {
+      const { name, email, password } = adminData;
+
+      // Check if admin already exists
+      const existingAdmin = await User.findOne({ email });
+      if (existingAdmin) {
+        throw new Error('Admin with this email already exists');
+      }
+
+      // Create new admin user
+      const admin = await User.create({
+        name,
+        email,
+        password,
+        role: 'admin',
+        isActive: true
+      });
+
+      // Generate token
+      const generateToken = require('../utils/generateToken');
+      const token = generateToken(admin);
+
+      return {
+        user: admin.toJSON(),
+        token
+      };
+    } catch (error) {
+      if (error.message.includes('already exists')) {
+        throw error;
+      }
+      if (error.code === 11000) {
+        throw new Error('Admin with this email already exists');
+      }
+      console.error('❌ Error creating admin:', error);
+      throw new Error('Failed to create admin');
+    }
+  }
 }
 
 module.exports = new AdminService();

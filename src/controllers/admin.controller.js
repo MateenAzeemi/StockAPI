@@ -361,6 +361,44 @@ class AdminController {
       throw error;
     }
   });
+
+  /**
+   * Admin Signup
+   * POST /api/admin/signup
+   */
+  signup = asyncHandler(async (req, res) => {
+    const { name, email, password } = req.body;
+
+    // Validation
+    if (!name || !email || !password) {
+      return errorResponse(res, 'Name, email, and password are required', 400);
+    }
+
+    if (password.length < 6) {
+      return errorResponse(res, 'Password must be at least 6 characters', 400);
+    }
+
+    // Email validation
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      return errorResponse(res, 'Invalid email format', 400);
+    }
+
+    try {
+      const result = await adminService.createAdmin({ name, email, password });
+      
+      return successResponse(
+        res,
+        result,
+        'Admin registered successfully',
+        201
+      );
+    } catch (error) {
+      if (error.message.includes('already exists')) {
+        return errorResponse(res, error.message, 409);
+      }
+      throw error;
+    }
+  });
 }
 
 module.exports = new AdminController();
