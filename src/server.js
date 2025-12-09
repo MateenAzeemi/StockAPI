@@ -23,8 +23,11 @@ const startServer = async () => {
       logger.info(`📡 API Base: http://localhost:${config.PORT}/api`);
     });
     
-    // Initialize Cron Jobs
-    initializeCron();
+    // Initialize Cron Jobs (only if not on Vercel)
+    // Vercel handles cron jobs via vercel.json crons configuration
+    if (!process.env.VERCEL) {
+      initializeCron();
+    }
     
     return server;
   } catch (error) {

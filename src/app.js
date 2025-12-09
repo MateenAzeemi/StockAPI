@@ -8,6 +8,7 @@ const config = require('./config/env');
 const stockRoutes = require('./routes/stock.routes');
 const adminRoutes = require('./routes/admin.routes');
 const authRoutes = require('./routes/auth.routes');
+const cronRoutes = require('./routes/cron.routes');
 
 // Import Controllers
 const stockController = require('./controllers/stock.controller');
@@ -58,6 +59,9 @@ app.use('/api/admin', adminRoutes);
 
 // Auth endpoints - public for login/signup
 app.use('/api/auth', authRoutes);
+
+// Cron endpoints - for Vercel Cron Jobs
+app.use('/api/cron', cronRoutes);
 
 // Backward compatibility: Map old /api/data to new /api/stocks/home
 app.get('/api/data', async (req, res, next) => {
