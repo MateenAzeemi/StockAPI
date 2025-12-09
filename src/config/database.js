@@ -1,16 +1,33 @@
 const mongoose = require("mongoose");
 
-let isConnected = false;
-
 async function connectDB() {
-  if (isConnected) return;
+  // Check if already connected
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  // Check if connection is in progress
+  if (mongoose.connection.readyState === 2) {
+    // Wait for connection to complete
+    return new Promise((resolve, reject) => {
+      mongoose.connection.once('connected', () => resolve(mongoose.connection));
+      mongoose.connection.once('error', reject);
+    });
+  }
 
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    // Set connection options for serverless environments
+    const options = {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      bufferCommands: false, // Disable mongoose buffering
+    };
 
-    isConnected = conn.connections[0].readyState === 1;
+    const conn = await mongoose.connect(process.env.MONGODB_URI, options);
 
-    console.log("✅ MongoDB Connected (Vercel Cached)");
+    console.log("✅ MongoDB Connected");
+    return conn;
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
     throw error;

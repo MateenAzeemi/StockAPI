@@ -39,6 +39,49 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Cookie Parser
 app.use(cookieParser());
 
+// Database Connection Middleware (required for Vercel serverless)
+// Ensures MongoDB connection is established before handling requests
+const mongoose = require('mongoose');
+const connectDB = require('./config/database');
+
+let connectionPromise = null;
+
+async function ensureConnection() {
+  // If already connected, return immediately
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  // If connection is in progress, wait for it
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  // Start new connection
+  connectionPromise = connectDB()
+    .catch((error) => {
+      // Reset promise on error so we can retry
+      connectionPromise = null;
+      throw error;
+    });
+
+  return connectionPromise;
+}
+
+app.use(async (req, res, next) => {
+  try {
+    await ensureConnection();
+    next();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message
+    });
+  }
+});
+
 // Request Logger (Development)
 if (config.NODE_ENV === 'development') {
   app.use((req, res, next) => {
